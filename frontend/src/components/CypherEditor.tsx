@@ -3,7 +3,7 @@ import { EditorState } from "@codemirror/state";
 import { EditorView, keymap, placeholder } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { Play } from "lucide-react";
+import { Play, Loader2 } from "lucide-react";
 
 interface CypherEditorProps {
   onRun: (query: string) => void;
@@ -44,10 +44,28 @@ export function CypherEditor({ onRun, loading }: CypherEditorProps) {
         EditorView.theme({
           "&": {
             fontSize: "13px",
-            maxHeight: "200px",
+            maxHeight: "160px",
+            background: "transparent",
           },
+          "&.cm-focused": { outline: "none" },
           ".cm-scroller": {
             overflow: "auto",
+            fontFamily: "'JetBrains Mono', monospace",
+          },
+          ".cm-gutters": {
+            background: "transparent",
+            border: "none",
+            color: "rgba(148, 163, 184, 0.3)",
+          },
+          ".cm-activeLineGutter": {
+            background: "transparent",
+            color: "rgba(129, 140, 248, 0.6)",
+          },
+          ".cm-activeLine": {
+            background: "rgba(99, 102, 241, 0.04)",
+          },
+          ".cm-cursor": {
+            borderLeftColor: "var(--accent)",
           },
         }),
       ],
@@ -71,8 +89,8 @@ export function CypherEditor({ onRun, loading }: CypherEditorProps) {
         disabled={loading}
         title="Run query (Ctrl+Enter)"
       >
-        <Play size={16} />
-        {loading ? "Running..." : "Run"}
+        {loading ? <Loader2 size={14} className="spin" /> : <Play size={14} />}
+        {loading ? "Running" : "Run"}
       </button>
     </div>
   );

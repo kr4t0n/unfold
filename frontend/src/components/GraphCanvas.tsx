@@ -3,8 +3,8 @@ import cytoscape, { type Core, type EventObject } from "cytoscape";
 import type { NodeData, EdgeData, StyleMap } from "../types/graph";
 
 const DEFAULT_NODE_COLORS = [
-  "#6366f1", "#f43f5e", "#10b981", "#f59e0b", "#3b82f6",
-  "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#06b6d4",
+  "#818cf8", "#fb7185", "#34d399", "#fbbf24", "#60a5fa",
+  "#a78bfa", "#f472b6", "#2dd4bf", "#fb923c", "#22d3ee",
 ];
 
 interface GraphCanvasProps {
@@ -25,6 +25,7 @@ export function GraphCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
   const labelColorCache = useRef<Map<string, string>>(new Map());
+  const positionCache = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   const getNodeColor = useCallback(
     (labels: string[]) => {
@@ -43,18 +44,18 @@ export function GraphCanvas({
   const getNodeSize = useCallback(
     (labels: string[]) => {
       const primary = labels[0] || "default";
-      return styleMap.nodes[primary]?.size || 36;
+      return styleMap.nodes[primary]?.size || 32;
     },
     [styleMap.nodes]
   );
 
   const getEdgeColor = useCallback(
-    (type: string) => styleMap.edges[type]?.color || "#94a3b8",
+    (type: string) => styleMap.edges[type]?.color || "#475569",
     [styleMap.edges]
   );
 
   const getEdgeWidth = useCallback(
-    (type: string) => styleMap.edges[type]?.width || 2,
+    (type: string) => styleMap.edges[type]?.width || 1.5,
     [styleMap.edges]
   );
 
@@ -68,60 +69,104 @@ export function GraphCanvas({
           selector: "node",
           style: {
             label: "data(displayLabel)",
-            "text-valign": "center",
+            "text-valign": "bottom",
             "text-halign": "center",
-            "font-size": "11px",
-            color: "#fff",
-            "text-outline-width": 2,
-            "text-outline-color": "data(bgColor)",
+            "text-margin-y": 6,
+            "font-size": "10px",
+            "font-weight": "500",
+            "font-family": "Inter, sans-serif",
+            color: "rgba(226, 232, 240, 0.7)",
+            "text-outline-width": 0,
             "background-color": "data(bgColor)",
             width: "data(nodeSize)",
             height: "data(nodeSize)",
+            "border-width": 2,
+            "border-color": "data(bgColor)",
+            "border-opacity": 0.3,
+            "overlay-opacity": 0,
+            "transition-property":
+              "border-width, border-color, border-opacity, width, height",
+            "transition-duration": "150ms",
           },
         },
         {
-          selector: "node:selected",
+          selector: "node:active",
+          style: {
+            "overlay-opacity": 0,
+          },
+        },
+        {
+          selector: "node.hovered",
+          style: {
+            "border-width": 3,
+            "border-opacity": 0.6,
+            color: "rgba(226, 232, 240, 1)",
+          },
+        },
+        {
+          selector: "node.selected-node",
           style: {
             "border-width": 3,
             "border-color": "#fff",
-            "overlay-opacity": 0.1,
+            "border-opacity": 0.9,
+            color: "#fff",
           },
         },
         {
           selector: "edge",
           style: {
-            label: "data(relType)",
-            "font-size": "9px",
-            color: "#cbd5e1",
-            "text-rotation": "autorotate",
-            "text-outline-width": 1.5,
-            "text-outline-color": "#1e293b",
+            label: "",
             "curve-style": "bezier",
             "target-arrow-shape": "triangle",
+            "arrow-scale": 0.7,
             "line-color": "data(edgeColor)",
             "target-arrow-color": "data(edgeColor)",
             width: "data(edgeWidth)",
-            opacity: 0.15,
-            "transition-property": "opacity",
+            opacity: 0.12,
+            "transition-property": "opacity, width, line-color",
             "transition-duration": "200ms",
           },
         },
         {
           selector: "edge.highlighted",
           style: {
-            opacity: 1,
+            label: "data(relType)",
+            "font-size": "8px",
+            "font-family": "JetBrains Mono, monospace",
+            color: "rgba(148, 163, 184, 0.8)",
+            "text-rotation": "autorotate",
+            "text-outline-width": 2,
+            "text-outline-color": "rgba(10, 14, 26, 0.9)",
+            opacity: 0.8,
+            width: 2,
             "z-index": 10,
           },
         },
       ],
       layout: { name: "preset" },
-      wheelSensitivity: 0.3,
+      wheelSensitivity: 0.2,
+      minZoom: 0.3,
+      maxZoom: 3,
+      pixelRatio: 2,
     });
 
     cyRef.current = cy;
 
+    cy.on("mouseover", "node", (evt: EventObject) => {
+      evt.target.addClass("hovered");
+      containerRef.current!.style.cursor = "pointer";
+    });
+
+    cy.on("mouseout", "node", (evt: EventObject) => {
+      evt.target.removeClass("hovered");
+      containerRef.current!.style.cursor = "default";
+    });
+
     cy.on("tap", "node", (evt: EventObject) => {
+      cy.nodes().removeClass("selected-node");
       cy.edges().removeClass("highlighted");
+
+      evt.target.addClass("selected-node");
       evt.target.connectedEdges().addClass("highlighted");
 
       const nodeData = evt.target.data();
@@ -134,6 +179,7 @@ export function GraphCanvas({
 
     cy.on("tap", (evt: EventObject) => {
       if (evt.target === cy) {
+        cy.nodes().removeClass("selected-node");
         cy.edges().removeClass("highlighted");
         onNodeSelect(null);
       }
@@ -156,11 +202,12 @@ export function GraphCanvas({
 
     const existingNodeIds = new Set(cy.nodes().map((n) => n.id()));
     const existingEdgeIds = new Set(cy.edges().map((e) => e.id()));
-
     const newNodeIds = new Set(nodes.map((n) => n.id));
     const newEdgeIds = new Set(edges.map((e) => e.id));
 
     cy.nodes().forEach((n) => {
+      const pos = n.position();
+      positionCache.current.set(n.id(), { x: pos.x, y: pos.y });
       if (!newNodeIds.has(n.id())) cy.remove(n);
     });
     cy.edges().forEach((e) => {
@@ -168,30 +215,34 @@ export function GraphCanvas({
     });
 
     const displayLabel = (n: NodeData) => {
-      const name =
-        n.properties.name || n.properties.title || n.properties.id || "";
-      return String(name).slice(0, 20) || n.labels[0] || "?";
+      const name = n.properties.name || n.properties.title || n.properties.id || "";
+      return String(name).slice(0, 18) || n.labels[0] || "?";
     };
+
+    let hasNewNodes = false;
 
     const nodesToAdd = nodes
       .filter((n) => !existingNodeIds.has(n.id))
-      .map((n) => ({
-        group: "nodes" as const,
-        data: {
-          id: n.id,
-          displayLabel: displayLabel(n),
-          labels: n.labels,
-          properties: n.properties,
-          bgColor: getNodeColor(n.labels),
-          nodeSize: getNodeSize(n.labels),
-        },
-      }));
+      .map((n) => {
+        const cached = positionCache.current.get(n.id);
+        if (!cached) hasNewNodes = true;
+        return {
+          group: "nodes" as const,
+          data: {
+            id: n.id,
+            displayLabel: displayLabel(n),
+            labels: n.labels,
+            properties: n.properties,
+            bgColor: getNodeColor(n.labels),
+            nodeSize: getNodeSize(n.labels),
+          },
+          position: cached || undefined,
+        };
+      });
 
     const edgesToAdd = edges
       .filter((e) => !existingEdgeIds.has(e.id))
-      .filter(
-        (e) => newNodeIds.has(e.source) && newNodeIds.has(e.target)
-      )
+      .filter((e) => newNodeIds.has(e.source) && newNodeIds.has(e.target))
       .map((e) => ({
         group: "edges" as const,
         data: {
@@ -208,16 +259,21 @@ export function GraphCanvas({
     if (nodesToAdd.length || edgesToAdd.length) {
       cy.add([...nodesToAdd, ...edgesToAdd]);
 
-      cy.layout({
-        name: "cose",
-        animate: true,
-        animationDuration: 400,
-        randomize: nodesToAdd.length > 5,
-        nodeRepulsion: () => 8000,
-        idealEdgeLength: () => 100,
-        // @ts-expect-error cose layout supports this
-        numIter: 200,
-      }).run();
+      if (hasNewNodes) {
+        cy.layout({
+          name: "cose",
+          animate: true,
+          animationDuration: 500,
+          animationEasing: "ease-out",
+          randomize: nodesToAdd.length > 5,
+          nodeRepulsion: () => 12000,
+          idealEdgeLength: () => 120,
+          gravity: 0.3,
+          // @ts-expect-error cose layout supports this
+          numIter: 300,
+          padding: 80,
+        }).run();
+      }
     }
 
     cy.nodes().forEach((n) => {
@@ -232,15 +288,5 @@ export function GraphCanvas({
     });
   }, [nodes, edges, getNodeColor, getNodeSize, getEdgeColor, getEdgeWidth]);
 
-  return (
-    <div
-      ref={containerRef}
-      style={{
-        width: "100%",
-        height: "100%",
-        background: "#0f172a",
-        borderRadius: "8px",
-      }}
-    />
-  );
+  return <div ref={containerRef} className="graph-container" />;
 }

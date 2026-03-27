@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef } from "react";
+import { Database, Palette, Share2 } from "lucide-react";
 import { CypherEditor } from "./components/CypherEditor";
 import { GraphCanvas } from "./components/GraphCanvas";
 import { SchemaBrowser } from "./components/SchemaBrowser";
@@ -23,6 +24,8 @@ function saveStyles(styles: StyleMap) {
   localStorage.setItem(STYLE_STORAGE_KEY, JSON.stringify(styles));
 }
 
+type SidebarTab = "schema" | "styles";
+
 export default function App() {
   const { runQuery, fetchNeighbors } = useApi();
   const { nodes, edges, replaceGraph, mergeGraph, clearGraph } = useGraph();
@@ -30,12 +33,15 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [styleMap, setStyleMap] = useState<StyleMap>(loadStyles);
+  const [activeTab, setActiveTab] = useState<SidebarTab>("schema");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const graphContainerRef = useRef<HTMLDivElement>(null);
 
   const handleRunQuery = useCallback(
     async (query: string) => {
       setLoading(true);
       setError(null);
+      setActiveFilter(null);
       try {
         const data = await runQuery({ query });
         replaceGraph(data);
@@ -67,18 +73,16 @@ export default function App() {
 
   const handleLabelClick = useCallback(
     (label: string) => {
-      handleRunQuery(`MATCH (n:\`${label}\`) RETURN n LIMIT 50`);
+      setActiveFilter((prev) => (prev === `label:${label}` ? null : `label:${label}`));
     },
-    [handleRunQuery]
+    []
   );
 
   const handleRelTypeClick = useCallback(
     (type: string) => {
-      handleRunQuery(
-        `MATCH (a)-[r:\`${type}\`]->(b) RETURN a, r, b LIMIT 50`
-      );
+      setActiveFilter((prev) => (prev === `rel:${type}` ? null : `rel:${type}`));
     },
-    [handleRunQuery]
+    []
   );
 
   const handleStyleChange = useCallback((newStyles: StyleMap) => {
@@ -105,6 +109,29 @@ export default function App() {
     URL.revokeObjectURL(link.href);
   }, [nodes, edges]);
 
+  const filteredNodes = useMemo(() => {
+    if (!activeFilter) return nodes;
+    if (activeFilter.startsWith("label:")) {
+      const label = activeFilter.slice(6);
+      return nodes.filter((n) => n.labels.includes(label));
+    }
+    return nodes;
+  }, [nodes, activeFilter]);
+
+  const filteredEdges = useMemo(() => {
+    if (!activeFilter) return edges;
+    const visibleNodeIds = new Set(filteredNodes.map((n) => n.id));
+    if (activeFilter.startsWith("rel:")) {
+      const type = activeFilter.slice(4);
+      return edges.filter(
+        (e) => e.type === type && visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)
+      );
+    }
+    return edges.filter(
+      (e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)
+    );
+  }, [edges, activeFilter, filteredNodes]);
+
   const nodeLabels = useMemo(() => {
     const set = new Set<string>();
     for (const n of nodes) for (const l of n.labels) set.add(l);
@@ -117,59 +144,100 @@ export default function App() {
     return Array.from(set).sort();
   }, [edges]);
 
+  const hasGraph = nodes.length > 0;
+
   return (
     <div className="app">
-      <header className="app-header">
-        <h1 className="app-title">Unfold</h1>
-        <span className="app-subtitle">Neo4j Visualizer</span>
-      </header>
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <span className="sidebar-logo">
+            <span>U</span>nfold
+          </span>
+        </div>
 
-      <div className="app-body">
-        <aside className="sidebar">
-          <SchemaBrowser
-            onLabelClick={handleLabelClick}
-            onRelTypeClick={handleRelTypeClick}
-          />
-          <StylePanel
-            nodeLabels={nodeLabels}
-            edgeTypes={edgeTypes}
-            styleMap={styleMap}
-            onStyleChange={handleStyleChange}
-          />
-        </aside>
+        <div className="sidebar-tabs">
+          <button
+            className={`sidebar-tab ${activeTab === "schema" ? "active" : ""}`}
+            onClick={() => setActiveTab("schema")}
+          >
+            <Database size={13} />
+            Schema
+          </button>
+          <button
+            className={`sidebar-tab ${activeTab === "styles" ? "active" : ""}`}
+            onClick={() => setActiveTab("styles")}
+          >
+            <Palette size={13} />
+            Styles
+          </button>
+        </div>
 
-        <main className="main-content">
-          <CypherEditor onRun={handleRunQuery} loading={loading} />
-
-          {error && <div className="error-banner">{error}</div>}
-
-          <Toolbar
-            nodes={nodes}
-            edges={edges}
-            onClear={clearGraph}
-            onExportPng={handleExportPng}
-            onExportJson={handleExportJson}
-          />
-
-          <div className="graph-area" ref={graphContainerRef}>
-            <GraphCanvas
-              nodes={nodes}
-              edges={edges}
-              styleMap={styleMap}
-              onNodeDoubleClick={handleExpand}
-              onNodeSelect={setSelectedNode}
+        <div className="sidebar-content">
+          {activeTab === "schema" && (
+            <SchemaBrowser
+              onLabelClick={handleLabelClick}
+              onRelTypeClick={handleRelTypeClick}
+              activeFilter={activeFilter}
             />
+          )}
+          {activeTab === "styles" && (
+            <StylePanel
+              nodeLabels={nodeLabels}
+              edgeTypes={edgeTypes}
+              styleMap={styleMap}
+              onStyleChange={handleStyleChange}
+            />
+          )}
+        </div>
+      </aside>
 
-            {selectedNode && (
-              <NodeDetail
-                node={selectedNode}
-                onClose={() => setSelectedNode(null)}
-                onExpand={handleExpand}
+      <main className="main-content">
+        <div className="graph-area" ref={graphContainerRef}>
+          <GraphCanvas
+            nodes={filteredNodes}
+            edges={filteredEdges}
+            styleMap={styleMap}
+            onNodeDoubleClick={handleExpand}
+            onNodeSelect={setSelectedNode}
+          />
+
+          {!hasGraph && (
+            <div className="empty-state">
+              <Share2 size={48} className="empty-state-icon" />
+              <div className="empty-state-text">
+                Run a Cypher query or click a label<br />in the sidebar to visualize your graph
+              </div>
+              <div className="empty-state-hint">
+                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute
+              </div>
+            </div>
+          )}
+
+          <div className="editor-float">
+            <CypherEditor onRun={handleRunQuery} loading={loading} />
+
+            {error && <div className="error-banner">{error}</div>}
+
+            {hasGraph && (
+              <Toolbar
+                nodes={filteredNodes}
+                edges={filteredEdges}
+                onClear={clearGraph}
+                onExportPng={handleExportPng}
+                onExportJson={handleExportJson}
               />
             )}
           </div>
-        </main>
-      </div>
+
+          {selectedNode && (
+            <NodeDetail
+              node={selectedNode}
+              onClose={() => setSelectedNode(null)}
+              onExpand={handleExpand}
+            />
+          )}
+        </div>
+      </main>
     </div>
   );
 }

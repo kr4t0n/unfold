@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, Maximize2 } from "lucide-react";
 import type { NodeData } from "../types/graph";
 
 interface NodeDetailProps {
@@ -16,7 +16,7 @@ export function NodeDetail({ node, onClose, onExpand }: NodeDetailProps) {
             <span key={l} className="node-detail-label">{l}</span>
           ))}
         </div>
-        <button className="icon-btn" onClick={onClose}>
+        <button className="icon-btn" onClick={onClose} title="Close">
           <X size={14} />
         </button>
       </div>
@@ -33,6 +33,7 @@ export function NodeDetail({ node, onClose, onExpand }: NodeDetailProps) {
         )}
       </div>
       <button className="expand-btn" onClick={() => onExpand(node.id)}>
+        <Maximize2 size={12} />
         Expand neighbors
       </button>
     </div>

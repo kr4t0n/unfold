@@ -1,4 +1,4 @@
-import { Download, ImageDown, Trash2, LayoutGrid } from "lucide-react";
+import { Download, ImageDown, Trash2 } from "lucide-react";
 import type { NodeData, EdgeData } from "../types/graph";
 
 interface ToolbarProps {
@@ -13,23 +13,22 @@ export function Toolbar({ nodes, edges, onClear, onExportPng, onExportJson }: To
   return (
     <div className="toolbar">
       <div className="toolbar-stats">
-        <LayoutGrid size={14} />
         <span>{nodes.length} nodes</span>
-        <span>·</span>
+        <span style={{ opacity: 0.3 }}>/</span>
         <span>{edges.length} edges</span>
       </div>
       <div className="toolbar-actions">
         <button className="toolbar-btn" onClick={onExportPng} title="Export as PNG" disabled={!nodes.length}>
-          <ImageDown size={14} />
-          <span>PNG</span>
+          <ImageDown size={12} />
+          PNG
         </button>
         <button className="toolbar-btn" onClick={onExportJson} title="Export as JSON" disabled={!nodes.length}>
-          <Download size={14} />
-          <span>JSON</span>
+          <Download size={12} />
+          JSON
         </button>
         <button className="toolbar-btn toolbar-btn-danger" onClick={onClear} title="Clear graph" disabled={!nodes.length}>
-          <Trash2 size={14} />
-          <span>Clear</span>
+          <Trash2 size={12} />
+          Clear
         </button>
       </div>
     </div>
