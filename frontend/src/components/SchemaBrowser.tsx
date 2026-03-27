@@ -52,21 +52,21 @@ export function SchemaBrowser({ onLabelClick, onRelTypeClick, activeFilter }: Sc
       {schema && (
         <>
           <div className="schema-section">
-            <button className="schema-section-toggle" onClick={() => setLabelsOpen(!labelsOpen)}>
-              {labelsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-              <span>Labels ({schema.labels.length})</span>
-              <span style={{ marginLeft: "auto" }}>
-                <button
-                  className="icon-btn"
-                  onClick={(e) => { e.stopPropagation(); load(); }}
-                  disabled={loading}
-                  title="Refresh"
-                  style={{ width: 20, height: 20 }}
-                >
-                  <RefreshCw size={11} className={loading ? "spin" : ""} />
-                </button>
-              </span>
-            </button>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <button className="schema-section-toggle" onClick={() => setLabelsOpen(!labelsOpen)}>
+                {labelsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                <span>Labels ({schema.labels.length})</span>
+              </button>
+              <button
+                className="icon-btn"
+                onClick={load}
+                disabled={loading}
+                title="Refresh"
+                style={{ width: 20, height: 20, marginLeft: "auto", flexShrink: 0 }}
+              >
+                <RefreshCw size={11} className={loading ? "spin" : ""} />
+              </button>
+            </div>
             {labelsOpen && (
               <ul className="schema-list">
                 {schema.labels.map((l, i) => (
