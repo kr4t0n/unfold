@@ -144,7 +144,6 @@ export function GraphCanvas({
         },
       ],
       layout: { name: "preset" },
-      wheelSensitivity: 0.2,
       minZoom: 0.3,
       maxZoom: 3,
       pixelRatio: 2,
