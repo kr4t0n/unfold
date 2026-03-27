@@ -44,7 +44,7 @@ export function GraphCanvas({
   const getNodeSize = useCallback(
     (labels: string[]) => {
       const primary = labels[0] || "default";
-      return styleMap.nodes[primary]?.size || 32;
+      return styleMap.nodes[primary]?.size || 10;
     },
     [styleMap.nodes]
   );
@@ -55,7 +55,7 @@ export function GraphCanvas({
   );
 
   const getEdgeWidth = useCallback(
-    (type: string) => styleMap.edges[type]?.width || 1.5,
+    (type: string) => styleMap.edges[type]?.width || 0.75,
     [styleMap.edges]
   );
 
@@ -71,8 +71,8 @@ export function GraphCanvas({
             label: "data(displayLabel)",
             "text-valign": "bottom",
             "text-halign": "center",
-            "text-margin-y": 6,
-            "font-size": "10px",
+            "text-margin-y": 4,
+            "font-size": "6px",
             "font-weight": "500",
             "font-family": "Inter, sans-serif",
             color: "rgba(226, 232, 240, 0.7)",
@@ -80,7 +80,7 @@ export function GraphCanvas({
             "background-color": "data(bgColor)",
             width: "data(nodeSize)",
             height: "data(nodeSize)",
-            "border-width": 2,
+            "border-width": 1,
             "border-color": "data(bgColor)",
             "border-opacity": 0.3,
             "overlay-opacity": 0,
@@ -98,7 +98,7 @@ export function GraphCanvas({
         {
           selector: "node.hovered",
           style: {
-            "border-width": 3,
+            "border-width": 1.5,
             "border-opacity": 0.6,
             color: "rgba(226, 232, 240, 1)",
           },
@@ -106,7 +106,7 @@ export function GraphCanvas({
         {
           selector: "node.selected-node",
           style: {
-            "border-width": 3,
+            "border-width": 1.5,
             "border-color": "#fff",
             "border-opacity": 0.9,
             color: "#fff",
@@ -118,7 +118,7 @@ export function GraphCanvas({
             label: "",
             "curve-style": "bezier",
             "target-arrow-shape": "triangle",
-            "arrow-scale": 0.7,
+            "arrow-scale": 0.4,
             "line-color": "data(edgeColor)",
             "target-arrow-color": "data(edgeColor)",
             width: "data(edgeWidth)",
@@ -131,14 +131,14 @@ export function GraphCanvas({
           selector: "edge.highlighted",
           style: {
             label: "data(relType)",
-            "font-size": "8px",
+            "font-size": "4px",
             "font-family": "JetBrains Mono, monospace",
             color: "rgba(148, 163, 184, 0.8)",
             "text-rotation": "autorotate",
-            "text-outline-width": 2,
+            "text-outline-width": 1,
             "text-outline-color": "rgba(10, 14, 26, 0.9)",
             opacity: 0.8,
-            width: 2,
+            width: 1,
             "z-index": 10,
           },
         },

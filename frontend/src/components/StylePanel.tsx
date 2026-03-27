@@ -16,7 +16,7 @@ const PRESET_COLORS = [
 
 export function StylePanel({ nodeLabels, edgeTypes, styleMap, onStyleChange }: StylePanelProps) {
   const updateNodeStyle = (label: string, patch: Partial<NodeStyle>) => {
-    const current = styleMap.nodes[label] || { color: "#6366f1", size: 36 };
+    const current = styleMap.nodes[label] || { color: "#6366f1", size: 10 };
     onStyleChange({
       ...styleMap,
       nodes: { ...styleMap.nodes, [label]: { ...current, ...patch } },
@@ -54,7 +54,7 @@ export function StylePanel({ nodeLabels, edgeTypes, styleMap, onStyleChange }: S
         <div className="style-section">
           <h4>Nodes</h4>
           {nodeLabels.map((label) => {
-            const style = styleMap.nodes[label] || { color: "#6366f1", size: 36 };
+            const style = styleMap.nodes[label] || { color: "#6366f1", size: 10 };
             return (
               <div key={label} className="style-row">
                 <span className="style-label">{label}</span>
