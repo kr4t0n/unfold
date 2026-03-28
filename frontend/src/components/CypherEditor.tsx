@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { EditorState } from "@codemirror/state";
 import { EditorView, keymap, placeholder } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
@@ -13,12 +13,14 @@ interface CypherEditorProps {
 export function CypherEditor({ onRun, loading }: CypherEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const onRunRef = useRef(onRun);
+  onRunRef.current = onRun;
 
-  const handleRun = useCallback(() => {
+  const handleRun = () => {
     if (!viewRef.current) return;
     const query = viewRef.current.state.doc.toString().trim();
-    if (query) onRun(query);
-  }, [onRun]);
+    if (query) onRunRef.current(query);
+  };
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -28,7 +30,8 @@ export function CypherEditor({ onRun, loading }: CypherEditorProps) {
         key: "Ctrl-Enter",
         mac: "Cmd-Enter",
         run: () => {
-          handleRun();
+          const query = viewRef.current?.state.doc.toString().trim();
+          if (query) onRunRef.current(query);
           return true;
         },
       },
@@ -78,7 +81,7 @@ export function CypherEditor({ onRun, loading }: CypherEditorProps) {
       view.destroy();
       viewRef.current = null;
     };
-  }, [handleRun]);
+  }, []);
 
   return (
     <div className="cypher-editor">
