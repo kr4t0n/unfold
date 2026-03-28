@@ -2,7 +2,7 @@ frontend:
   replicaCount: 1
   image:
     repository: kr4t0n/unfold-frontend
-    tag: main
+    tag: latest
     pullPolicy: IfNotPresent
   resources: {}
 
@@ -10,7 +10,7 @@ backend:
   replicaCount: 1
   image:
     repository: kr4t0n/unfold-backend
-    tag: main
+    tag: latest
     pullPolicy: IfNotPresent
   resources: {}
   env:
