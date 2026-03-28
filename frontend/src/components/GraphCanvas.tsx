@@ -96,6 +96,18 @@ export function GraphCanvas({
           },
         },
         {
+          selector: "edge:active",
+          style: {
+            "overlay-opacity": 0,
+          },
+        },
+        {
+          selector: "core",
+          style: {
+            "active-bg-opacity": 0,
+          },
+        },
+        {
           selector: "node.hovered",
           style: {
             "border-width": 1.5,
