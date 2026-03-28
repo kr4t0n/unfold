@@ -43,7 +43,7 @@ export function CypherEditor({ onRun, loading }: CypherEditorProps) {
         placeholder("Enter Cypher query..."),
         EditorView.theme({
           "&": {
-            fontSize: "13px",
+            fontSize: "16px",
             maxHeight: "160px",
             background: "transparent",
           },
