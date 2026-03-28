@@ -54,99 +54,96 @@ export function GraphCanvas({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cyStyle: any[] = [
+      {
+        selector: "node",
+        style: {
+          label: "data(displayLabel)",
+          "text-valign": "bottom",
+          "text-halign": "center",
+          "text-margin-y": 4,
+          "font-size": "6px",
+          "font-weight": 500,
+          "font-family": "Inter, sans-serif",
+          color: "rgba(226, 232, 240, 0.7)",
+          "text-outline-width": 0,
+          "background-color": "data(bgColor)",
+          width: "data(nodeSize)",
+          height: "data(nodeSize)",
+          "border-width": 1,
+          "border-color": "data(bgColor)",
+          "border-opacity": 0.3,
+          "overlay-opacity": 0,
+          "transition-property":
+            "border-width, border-color, border-opacity, width, height",
+          "transition-duration": 150,
+        },
+      },
+      {
+        selector: "node:active",
+        style: { "overlay-opacity": 0 },
+      },
+      {
+        selector: "edge:active",
+        style: { "overlay-opacity": 0 },
+      },
+      {
+        selector: "core",
+        style: { "active-bg-opacity": 0 },
+      },
+      {
+        selector: "node.hovered",
+        style: {
+          "border-width": 1.5,
+          "border-opacity": 0.6,
+          color: "rgba(226, 232, 240, 1)",
+        },
+      },
+      {
+        selector: "node.selected-node",
+        style: {
+          "border-width": 1.5,
+          "border-color": "#fff",
+          "border-opacity": 0.9,
+          color: "#fff",
+        },
+      },
+      {
+        selector: "edge",
+        style: {
+          label: "",
+          "curve-style": "bezier",
+          "target-arrow-shape": "triangle",
+          "arrow-scale": 0.4,
+          "line-color": "data(edgeColor)",
+          "target-arrow-color": "data(edgeColor)",
+          width: "data(edgeWidth)",
+          opacity: 0.12,
+          "transition-property": "opacity, width, line-color",
+          "transition-duration": 200,
+        },
+      },
+      {
+        selector: "edge.highlighted",
+        style: {
+          label: "data(relType)",
+          "font-size": "4px",
+          "font-family": "JetBrains Mono, monospace",
+          color: "rgba(148, 163, 184, 0.8)",
+          "text-rotation": "autorotate",
+          "text-outline-width": 1,
+          "text-outline-color": "rgba(10, 14, 26, 0.9)",
+          opacity: 0.8,
+          width: 1,
+          "z-index": 10,
+        },
+      },
+    ];
+
     const cy = cytoscape({
       container: containerRef.current,
-      style: [
-        {
-          selector: "node",
-          style: {
-            label: "data(displayLabel)",
-            "text-valign": "bottom",
-            "text-halign": "center",
-            "text-margin-y": 4,
-            "font-size": "6px",
-            "font-weight": "500",
-            "font-family": "Inter, sans-serif",
-            color: "rgba(226, 232, 240, 0.7)",
-            "text-outline-width": 0,
-            "background-color": "data(bgColor)",
-            width: "data(nodeSize)",
-            height: "data(nodeSize)",
-            "border-width": 1,
-            "border-color": "data(bgColor)",
-            "border-opacity": 0.3,
-            "overlay-opacity": 0,
-            "transition-property":
-              "border-width, border-color, border-opacity, width, height",
-            "transition-duration": "150ms",
-          },
-        },
-        {
-          selector: "node:active",
-          style: {
-            "overlay-opacity": 0,
-          },
-        },
-        {
-          selector: "edge:active",
-          style: {
-            "overlay-opacity": 0,
-          },
-        },
-        {
-          selector: "core",
-          style: {
-            "active-bg-opacity": 0,
-          },
-        },
-        {
-          selector: "node.hovered",
-          style: {
-            "border-width": 1.5,
-            "border-opacity": 0.6,
-            color: "rgba(226, 232, 240, 1)",
-          },
-        },
-        {
-          selector: "node.selected-node",
-          style: {
-            "border-width": 1.5,
-            "border-color": "#fff",
-            "border-opacity": 0.9,
-            color: "#fff",
-          },
-        },
-        {
-          selector: "edge",
-          style: {
-            label: "",
-            "curve-style": "bezier",
-            "target-arrow-shape": "triangle",
-            "arrow-scale": 0.4,
-            "line-color": "data(edgeColor)",
-            "target-arrow-color": "data(edgeColor)",
-            width: "data(edgeWidth)",
-            opacity: 0.12,
-            "transition-property": "opacity, width, line-color",
-            "transition-duration": "200ms",
-          },
-        },
-        {
-          selector: "edge.highlighted",
-          style: {
-            label: "data(relType)",
-            "font-size": "4px",
-            "font-family": "JetBrains Mono, monospace",
-            color: "rgba(148, 163, 184, 0.8)",
-            "text-rotation": "autorotate",
-            "text-outline-width": 1,
-            "text-outline-color": "rgba(10, 14, 26, 0.9)",
-            opacity: 0.8,
-            width: 1,
-            "z-index": 10,
-          },
-        },
-      ],
+      style: cyStyle,
       layout: { name: "preset" },
       minZoom: 0.3,
       maxZoom: 3,
@@ -274,7 +271,6 @@ export function GraphCanvas({
           edgeElasticity: () => 80,
           gravity: 0.15,
           nodeOverlap: 20,
-          // @ts-expect-error cose layout supports this
           numIter: 400,
           padding: 50,
           componentSpacing: 80,
