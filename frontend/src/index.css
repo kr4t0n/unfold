@@ -415,6 +415,76 @@ body {
   cursor: not-allowed;
 }
 
+/* ─── Cypher Editor Wrap ──────────────────── */
+
+.cypher-editor-wrap {
+  position: relative;
+}
+
+.history-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.history-toggle-btn:hover {
+  color: var(--accent);
+}
+
+.query-history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 20;
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.query-history-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.query-history-item:last-child { border-bottom: none; }
+
+.query-history-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 /* ─── Toolbar (floating, below editor) ────── */
 
 .toolbar {
@@ -496,6 +566,29 @@ body {
     radial-gradient(ellipse at 30% 20%, rgba(99, 102, 241, 0.04) 0%, transparent 60%),
     radial-gradient(ellipse at 70% 80%, rgba(129, 140, 248, 0.03) 0%, transparent 50%),
     var(--bg-primary);
+}
+
+/* ─── Minimap ─────────────────────────────── */
+
+.minimap {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  width: 160px;
+  height: 120px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  z-index: 15;
+  overflow: hidden;
+}
+
+.minimap-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* ─── Empty state ─────────────────────────── */

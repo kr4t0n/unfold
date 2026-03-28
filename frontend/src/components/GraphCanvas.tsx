@@ -1,16 +1,13 @@
 import { useEffect, useRef, useCallback } from "react";
 import cytoscape, { type Core, type EventObject } from "cytoscape";
 import type { NodeData, EdgeData, StyleMap } from "../types/graph";
-
-const DEFAULT_NODE_COLORS = [
-  "#818cf8", "#fb7185", "#34d399", "#fbbf24", "#60a5fa",
-  "#a78bfa", "#f472b6", "#2dd4bf", "#fb923c", "#22d3ee",
-];
+import { DEFAULT_LABEL_COLORS } from "../types/graph";
 
 interface GraphCanvasProps {
   nodes: NodeData[];
   edges: EdgeData[];
   styleMap: StyleMap;
+  labelColorMap: Record<string, string>;
   onNodeDoubleClick: (nodeId: string) => void;
   onNodeSelect: (node: NodeData | null) => void;
 }
@@ -19,26 +16,21 @@ export function GraphCanvas({
   nodes,
   edges,
   styleMap,
+  labelColorMap,
   onNodeDoubleClick,
   onNodeSelect,
 }: GraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
-  const labelColorCache = useRef<Map<string, string>>(new Map());
+  const minimapCanvasRef = useRef<HTMLCanvasElement>(null);
   const positionCache = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   const getNodeColor = useCallback(
     (labels: string[]) => {
       const primary = labels[0] || "default";
-      if (styleMap.nodes[primary]) return styleMap.nodes[primary].color;
-      if (labelColorCache.current.has(primary))
-        return labelColorCache.current.get(primary)!;
-      const idx = labelColorCache.current.size % DEFAULT_NODE_COLORS.length;
-      const color = DEFAULT_NODE_COLORS[idx];
-      labelColorCache.current.set(primary, color);
-      return color;
+      return labelColorMap[primary] || DEFAULT_LABEL_COLORS[0];
     },
-    [styleMap.nodes]
+    [labelColorMap]
   );
 
   const getNodeSize = useCallback(
@@ -302,5 +294,92 @@ export function GraphCanvas({
     });
   }, [nodes, edges, getNodeColor, getNodeSize, getEdgeColor, getEdgeWidth]);
 
-  return <div ref={containerRef} className="graph-container" />;
+  const drawMinimap = useCallback(() => {
+    const cy = cyRef.current;
+    const canvas = minimapCanvasRef.current;
+    if (!cy || !canvas || cy.nodes().length === 0) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, h);
+
+    const bb = cy.elements().boundingBox();
+    const pad = 20;
+    const graphW = bb.w + pad * 2;
+    const graphH = bb.h + pad * 2;
+    const scale = Math.min(w / graphW, h / graphH);
+    const offX = (w - graphW * scale) / 2;
+    const offY = (h - graphH * scale) / 2;
+
+    const toMiniX = (x: number) => offX + (x - bb.x1 + pad) * scale;
+    const toMiniY = (y: number) => offY + (y - bb.y1 + pad) * scale;
+
+    ctx.globalAlpha = 0.2;
+    cy.edges().forEach((e) => {
+      const src = e.source().position();
+      const tgt = e.target().position();
+      ctx.beginPath();
+      ctx.moveTo(toMiniX(src.x), toMiniY(src.y));
+      ctx.lineTo(toMiniX(tgt.x), toMiniY(tgt.y));
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    });
+
+    ctx.globalAlpha = 1;
+    cy.nodes().forEach((n) => {
+      const pos = n.position();
+      const color = n.data("bgColor") || "#818cf8";
+      const mx = toMiniX(pos.x);
+      const my = toMiniY(pos.y);
+      ctx.beginPath();
+      ctx.arc(mx, my, Math.max(2, 3 * scale), 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    });
+
+    const ext = cy.extent();
+    const vx = toMiniX(ext.x1);
+    const vy = toMiniY(ext.y1);
+    const vw = (ext.x2 - ext.x1) * scale;
+    const vh = (ext.y2 - ext.y1) * scale;
+    ctx.strokeStyle = "rgba(129, 140, 248, 0.6)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(vx, vy, vw, vh);
+    ctx.fillStyle = "rgba(129, 140, 248, 0.05)";
+    ctx.fillRect(vx, vy, vw, vh);
+  }, []);
+
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    const handler = () => requestAnimationFrame(drawMinimap);
+    cy.on("pan zoom resize layoutstop add remove", handler);
+    handler();
+
+    return () => {
+      cy.off("pan zoom resize layoutstop add remove", handler);
+    };
+  }, [drawMinimap, nodes]);
+
+  const hasNodes = nodes.length > 0;
+
+  return (
+    <>
+      <div ref={containerRef} className="graph-container" />
+      {hasNodes && (
+        <div className="minimap">
+          <canvas ref={minimapCanvasRef} className="minimap-canvas" />
+        </div>
+      )}
+    </>
+  );
 }

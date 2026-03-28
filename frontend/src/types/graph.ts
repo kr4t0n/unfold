@@ -39,6 +39,11 @@ export interface SchemaResponse {
   relationship_types: SchemaRelType[];
 }
 
+export const DEFAULT_LABEL_COLORS = [
+  "#818cf8", "#fb7185", "#34d399", "#fbbf24", "#60a5fa",
+  "#a78bfa", "#f472b6", "#2dd4bf", "#fb923c", "#22d3ee",
+];
+
 export interface NodeStyle {
   color: string;
   size: number;

@@ -1,20 +1,17 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
 import type { SchemaResponse } from "../types/graph";
+import { DEFAULT_LABEL_COLORS } from "../types/graph";
 import { useApi } from "../hooks/useApi";
-
-const LABEL_COLORS = [
-  "#818cf8", "#fb7185", "#34d399", "#fbbf24", "#60a5fa",
-  "#a78bfa", "#f472b6", "#2dd4bf", "#fb923c", "#22d3ee",
-];
 
 interface SchemaBrowserProps {
   onLabelClick: (label: string) => void;
   onRelTypeClick: (type: string) => void;
   activeFilter: string | null;
+  labelColorMap: Record<string, string>;
 }
 
-export function SchemaBrowser({ onLabelClick, onRelTypeClick, activeFilter }: SchemaBrowserProps) {
+export function SchemaBrowser({ onLabelClick, onRelTypeClick, activeFilter, labelColorMap }: SchemaBrowserProps) {
   const { fetchSchema } = useApi();
   const [schema, setSchema] = useState<SchemaResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -78,7 +75,7 @@ export function SchemaBrowser({ onLabelClick, onRelTypeClick, activeFilter }: Sc
                       <span className="schema-label-badge">
                         <span
                           className="schema-label-dot"
-                          style={{ background: LABEL_COLORS[i % LABEL_COLORS.length] }}
+                          style={{ background: labelColorMap[l.label] || DEFAULT_LABEL_COLORS[i % DEFAULT_LABEL_COLORS.length] }}
                         />
                         {l.label}
                       </span>

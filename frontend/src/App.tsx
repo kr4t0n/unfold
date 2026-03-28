@@ -9,8 +9,23 @@ import { NodeDetail } from "./components/NodeDetail";
 import { useApi } from "./hooks/useApi";
 import { useGraph } from "./hooks/useGraph";
 import type { NodeData, StyleMap } from "./types/graph";
+import { DEFAULT_LABEL_COLORS } from "./types/graph";
 
 const STYLE_STORAGE_KEY = "unfold-styles";
+const HISTORY_STORAGE_KEY = "unfold-query-history";
+const MAX_HISTORY = 20;
+
+function loadHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [];
+}
+
+function saveHistory(history: string[]) {
+  localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+}
 
 function loadStyles(): StyleMap {
   try {
@@ -35,7 +50,17 @@ export default function App() {
   const [styleMap, setStyleMap] = useState<StyleMap>(loadStyles);
   const [activeTab, setActiveTab] = useState<SidebarTab>("schema");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [queryHistory, setQueryHistory] = useState<string[]>(loadHistory);
   const graphContainerRef = useRef<HTMLDivElement>(null);
+
+  const addToHistory = useCallback((query: string) => {
+    setQueryHistory((prev) => {
+      const deduped = prev.filter((q) => q !== query);
+      const next = [query, ...deduped].slice(0, MAX_HISTORY);
+      saveHistory(next);
+      return next;
+    });
+  }, []);
 
   const handleRunQuery = useCallback(
     async (query: string) => {
@@ -46,13 +71,14 @@ export default function App() {
         const data = await runQuery({ query });
         replaceGraph(data);
         setSelectedNode(null);
+        addToHistory(query);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Query failed");
       } finally {
         setLoading(false);
       }
     },
-    [runQuery, replaceGraph]
+    [runQuery, replaceGraph, addToHistory]
   );
 
   const handleExpand = useCallback(
@@ -144,6 +170,15 @@ export default function App() {
     return Array.from(set).sort();
   }, [edges]);
 
+  const labelColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const label of nodeLabels) {
+      map[label] = styleMap.nodes[label]?.color
+        || DEFAULT_LABEL_COLORS[Object.keys(map).length % DEFAULT_LABEL_COLORS.length];
+    }
+    return map;
+  }, [nodeLabels, styleMap.nodes]);
+
   const hasGraph = nodes.length > 0;
 
   return (
@@ -178,6 +213,7 @@ export default function App() {
               onLabelClick={handleLabelClick}
               onRelTypeClick={handleRelTypeClick}
               activeFilter={activeFilter}
+              labelColorMap={labelColorMap}
             />
           )}
           {activeTab === "styles" && (
@@ -197,6 +233,7 @@ export default function App() {
             nodes={filteredNodes}
             edges={filteredEdges}
             styleMap={styleMap}
+            labelColorMap={labelColorMap}
             onNodeDoubleClick={handleExpand}
             onNodeSelect={setSelectedNode}
           />
@@ -214,7 +251,11 @@ export default function App() {
           )}
 
           <div className="editor-float">
-            <CypherEditor onRun={handleRunQuery} loading={loading} />
+            <CypherEditor
+              onRun={handleRunQuery}
+              loading={loading}
+              queryHistory={queryHistory}
+            />
 
             {error && <div className="error-banner">{error}</div>}
 
