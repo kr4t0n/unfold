@@ -262,15 +262,18 @@ export function GraphCanvas({
         cy.layout({
           name: "cose",
           animate: true,
-          animationDuration: 500,
+          animationDuration: 600,
           animationEasing: "ease-out",
-          randomize: nodesToAdd.length > 5,
-          nodeRepulsion: () => 12000,
-          idealEdgeLength: () => 120,
-          gravity: 0.3,
+          randomize: true,
+          nodeRepulsion: () => 30000,
+          idealEdgeLength: () => 140,
+          edgeElasticity: () => 80,
+          gravity: 0.15,
+          nodeOverlap: 20,
           // @ts-expect-error cose layout supports this
-          numIter: 300,
-          padding: 80,
+          numIter: 400,
+          padding: 50,
+          componentSpacing: 80,
         }).run();
       }
     }
