@@ -27,12 +27,12 @@ spec:
               service:
                 name: {{ include "unfold.fullname" . }}-backend
                 port:
-                  number: {{ .Values.backend.service.port }}
+                  number: 8000
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: {{ include "unfold.fullname" . }}-frontend
                 port:
-                  number: {{ .Values.frontend.service.port }}
+                  number: 3000
 {{- end }}

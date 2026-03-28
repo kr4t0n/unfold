@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
         - name: neo4j
-          image: "{{ .Values.neo4j.image.repository }}:{{ .Values.neo4j.image.tag }}"
-          imagePullPolicy: {{ .Values.neo4j.image.pullPolicy }}
+          image: "neo4j:5"
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 7474
@@ -61,7 +61,16 @@ spec:
             initialDelaySeconds: 20
             periodSeconds: 10
           resources:
+            {{- if .Values.neo4j.resources }}
             {{- toYaml .Values.neo4j.resources | nindent 12 }}
+            {{- else }}
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            {{- end }}
   {{- if .Values.neo4j.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:

@@ -7,13 +7,13 @@ metadata:
     {{- include "unfold.labels" . | nindent 4 }}
     app.kubernetes.io/component: neo4j
 spec:
-  type: {{ .Values.neo4j.service.type }}
+  type: ClusterIP
   ports:
-    - port: {{ .Values.neo4j.service.httpPort }}
+    - port: 7474
       targetPort: http
       protocol: TCP
       name: http
-    - port: {{ .Values.neo4j.service.boltPort }}
+    - port: 7687
       targetPort: bolt
       protocol: TCP
       name: bolt
