@@ -1,6 +1,10 @@
-# Unfold — Neo4j Visualizer
+<p align="center">
+  <img src="icon.png" alt="unfold" width="120" />
+</p>
 
-A self-hosted Neo4j graph visualizer with a Cypher query editor, interactive graph canvas, schema browser, and node/edge styling.
+<h1 align="center">unfold</h1>
+
+<p align="center">A self-hosted Neo4j graph visualizer with an interactive canvas, schema browser, and query history.</p>
 
 ## Quick Start (Docker Compose)
 
@@ -18,10 +22,14 @@ docker compose up --build
 ## Features
 
 - **Cypher Editor** — Write and execute Cypher queries with syntax highlighting (Ctrl+Enter to run)
-- **Graph Canvas** — Interactive Cytoscape.js visualization with zoom, pan, and force-directed layout
-- **Schema Browser** — Browse all node labels, relationship types, and their properties
+- **Query History** — Recent queries saved and accessible via dropdown for quick re-execution
+- **Graph Canvas** — Interactive Cytoscape.js visualization with force-directed layout, zoom, and pan
+- **Schema Browser** — Browse all node labels, relationship types, and their properties; click to filter the graph
+- **Label Filtering** — Click a label in the sidebar to isolate those nodes; click again to restore the full graph with preserved positions
 - **Click-to-Expand** — Double-click any node to fetch and display its neighbors
 - **Node/Edge Styling** — Customize colors and sizes per label/relationship type (persisted in localStorage)
+- **Minimap** — Real-time bird's-eye overview of the graph with viewport indicator
+- **Node Detail Panel** — Click a node to inspect all its properties
 - **Export** — Save the current graph view as PNG or export data as JSON
 
 ## Architecture
