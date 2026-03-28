@@ -1,36 +1,36 @@
 frontend:
   replicaCount: 1
   image:
-    repository: "kr4t0n/unfold-frontend"
-    tag: "main"
+    repository: kr4t0n/unfold-frontend
+    tag: main
     pullPolicy: IfNotPresent
   resources: {}
 
 backend:
   replicaCount: 1
   image:
-    repository: "kr4t0n/unfold-backend"
-    tag: "main"
+    repository: kr4t0n/unfold-backend
+    tag: main
     pullPolicy: IfNotPresent
   resources: {}
   env:
-    NEO4J_URI: "bolt://neo4j:7687"
-    NEO4J_USER: "neo4j"
-  secretName: ""
+    NEO4J_URI: bolt://neo4j:7687
+    NEO4J_USER: neo4j
+  secretName:
 
 neo4j:
   enabled: true
   auth:
-    password: "changeme"
+    password: changeme
   persistence:
     enabled: true
     size: 10Gi
-    storageClass: ""
+    storageClass:
   resources: {}
 
 ingress:
   enabled: false
-  className: ""
+  className:
   annotations: {}
   host: unfold.local
   tls: []
