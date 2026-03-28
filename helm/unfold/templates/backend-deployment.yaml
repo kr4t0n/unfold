@@ -37,7 +37,7 @@ spec:
                   name: {{ .Values.backend.secretName }}
                   key: NEO4J_PASSWORD
               {{- else }}
-              value: {{ .Values.neo4j.auth.password | quote }}
+              value: {{ .Values.backend.env.NEO4J_PASSWORD | quote }}
               {{- end }}
           livenessProbe:
             httpGet:
