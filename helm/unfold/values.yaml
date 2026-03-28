@@ -35,4 +35,3 @@ ingress:
   host: unfold.local
   tls: []
 
-imagePullSecrets: []
