@@ -57,17 +57,27 @@ jobs:
       - name: Package chart
         run: helm package helm/unfold -d .cr-release-packages
 
+      - name: Create GitHub Release
+        run: |
+          CHART_FILE=$(ls .cr-release-packages/*.tgz)
+          gh release create "helm-v${{ steps.version.outputs.version }}" \
+            "$CHART_FILE" \
+            --title "Helm Chart v${{ steps.version.outputs.version }}" \
+            --notes "Helm chart release v${{ steps.version.outputs.version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update index and publish
         run: |
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/helm-v${{ steps.version.outputs.version }}"
           helm repo index .cr-release-packages \
-            --url https://kr4t0n.github.io/unfold \
+            --url "$RELEASE_URL" \
             --merge gh-pages/index.yaml
-          cp .cr-release-packages/*.tgz gh-pages/
           cp .cr-release-packages/index.yaml gh-pages/index.yaml
           cd gh-pages
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git add .
+          git add index.yaml
           git diff --cached --quiet && echo "No changes" && exit 0
           git commit -m "chore: publish helm chart ${{ steps.version.outputs.version }}"
           git push
