@@ -63,15 +63,18 @@ body {
   padding: 16px 16px 0;
 }
 
+.sidebar-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-xs);
+  object-fit: contain;
+}
+
 .sidebar-logo {
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.5px;
   color: var(--text-primary);
-}
-
-.sidebar-logo span {
-  color: var(--accent);
 }
 
 .sidebar-tabs {
@@ -381,7 +384,7 @@ body {
 }
 
 .cypher-editor-container .cm-editor .cm-content {
-  font-family: 'JetBrains Mono', monospace !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 16px !important;
 }
 
@@ -505,7 +508,7 @@ body {
   gap: 6px;
   font-size: 16px;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .toolbar-actions { display: flex; gap: 3px; }

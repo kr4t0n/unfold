@@ -69,7 +69,7 @@ export function CypherEditor({ onRun, loading, queryHistory }: CypherEditorProps
           "&.cm-focused": { outline: "none" },
           ".cm-scroller": {
             overflow: "auto",
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
           },
           ".cm-gutters": {
             background: "transparent",

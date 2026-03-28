@@ -185,9 +185,8 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <span className="sidebar-logo">
-            <span>U</span>nfold
-          </span>
+          <img src="/icon.png" alt="Unfold" className="sidebar-icon" />
+          <span className="sidebar-logo">unfold</span>
         </div>
 
         <div className="sidebar-tabs">
