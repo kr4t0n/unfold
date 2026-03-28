@@ -1,0 +1,6 @@
+apiVersion: v2
+name: unfold
+description: A self-hosted Neo4j graph visualizer
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
