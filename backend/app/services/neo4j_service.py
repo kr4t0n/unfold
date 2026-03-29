@@ -87,37 +87,73 @@ def get_neighbors(node_id: str) -> GraphData:
     return execute_cypher(query, {"node_id": node_id})
 
 
-def get_schema() -> SchemaResponse:
-    labels: list[SchemaLabel] = []
+def _get_estimated_counts() -> tuple[dict[str, int], dict[str, int]]:
+    """Use db.store info or token lookup for fast estimated counts."""
+    label_counts: dict[str, int] = {}
+    rel_counts: dict[str, int] = {}
+    try:
+        results, _ = db.cypher_query(
+            "CALL apoc.meta.stats() YIELD labels, relTypesCount "
+            "RETURN labels, relTypesCount",
+            {},
+        )
+        if results:
+            label_counts = results[0][0] or {}
+            rel_counts = results[0][1] or {}
+    except Exception:
+        pass
+    return label_counts, rel_counts
 
+
+def get_schema() -> SchemaResponse:
+    label_counts, rel_counts = _get_estimated_counts()
+
+    labels: list[SchemaLabel] = []
     labels_result, _ = db.cypher_query(
         """
         CALL db.labels() YIELD label
-        OPTIONAL MATCH (n) WHERE label IN labels(n)
-        WITH label, count(n) AS cnt, collect(keys(n))[0] AS props
-        RETURN label, cnt, props
+        CALL {
+            WITH label
+            MATCH (n) WHERE label IN labels(n)
+            WITH keys(n) AS props
+            RETURN props LIMIT 1
+        }
+        RETURN label, props
         """,
         {},
     )
     for row in labels_result:
+        label = row[0]
         labels.append(
-            SchemaLabel(label=row[0], count=row[1], properties=row[2] or [])
+            SchemaLabel(
+                label=label,
+                count=label_counts.get(label, 0),
+                properties=row[1] or [],
+            )
         )
 
+    rel_types: list[SchemaRelType] = []
     rels_result, _ = db.cypher_query(
         """
         CALL db.relationshipTypes() YIELD relationshipType AS type
-        OPTIONAL MATCH ()-[r]->() WHERE type(r) = type
-        WITH type, count(r) AS cnt, collect(keys(r))[0] AS props
-        RETURN type, cnt, props
+        CALL {
+            WITH type
+            MATCH ()-[r]->() WHERE type(r) = type
+            WITH keys(r) AS props
+            RETURN props LIMIT 1
+        }
+        RETURN type, props
         """,
         {},
     )
-
-    rel_types: list[SchemaRelType] = []
     for row in rels_result:
+        rtype = row[0]
         rel_types.append(
-            SchemaRelType(type=row[0], count=row[1], properties=row[2] or [])
+            SchemaRelType(
+                type=rtype,
+                count=rel_counts.get(rtype, 0),
+                properties=row[1] or [],
+            )
         )
 
     return SchemaResponse(labels=labels, relationship_types=rel_types)
