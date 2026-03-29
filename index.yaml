@@ -3,6 +3,16 @@ entries:
   unfold:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2026-03-29T07:56:15.639271102Z"
+    description: A self-hosted Neo4j graph visualizer
+    digest: 3b3beca19c3a4a3aac46a08ef0638f059f7b6ffc1be2a4c6db8c848c99a5969e
+    name: unfold
+    type: application
+    urls:
+    - https://github.com/kr4t0n/unfold/releases/download/helm-v0.0.3/unfold-0.0.3.tgz
+    version: 0.0.3
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2026-03-28T17:29:26.654405734Z"
     description: A self-hosted Neo4j graph visualizer
     digest: 27a12605b0fcbc0b1518c5f0e50b5e7371f07e7cfa2bcbced13e6bf777ab274c
@@ -21,4 +31,4 @@ entries:
     urls:
     - https://kr4t0n.github.io/unfold/unfold-0.0.1.tgz
     version: 0.0.1
-generated: "2026-03-28T17:29:26.653680083Z"
+generated: "2026-03-29T07:56:15.637935479Z"
