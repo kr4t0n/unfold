@@ -3,11 +3,7 @@
 {{- end }}
 
 {{- define "unfold.fullname" -}}
-{{- if .Release.Name }}
-{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- .Chart.Name | trunc 63 | trimSuffix "-" }}
-{{- end }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
 {{- define "unfold.labels" -}}
